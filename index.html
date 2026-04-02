@@ -426,11 +426,90 @@ body {
   color: var(--text-secondary);
 }
 
-/* Responsive */
+/* ─── MOBILE TOGGLE BUTTON ───────────────────────── */
+.filter-toggle-btn {
+  display: none;
+  width: 100%; padding: 12px 20px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text-secondary);
+  font-size: 14px; font-family: 'Inter', sans-serif;
+  cursor: pointer; text-align: left;
+  align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.filter-toggle-btn span { font-weight: 600; }
+.filter-toggle-btn .toggle-arrow { transition: transform 0.25s; }
+.filter-toggle-btn.open .toggle-arrow { transform: rotate(180deg); }
+
+/* ─── RESPONSIVE — TABLET (≤900px) ──────────────── */
 @media (max-width: 900px) {
+  .header { padding: 16px 20px 14px; }
+  .header-top { margin-bottom: 14px; }
+  .logo { font-size: 26px; letter-spacing: 2px; }
+  .logo-subtitle { font-size: 9px; letter-spacing: 2px; }
+  .stats-bar { gap: 16px; }
+  .stat-value { font-size: 17px; }
+  .stat-label { font-size: 9px; }
+  .search-bar { font-size: 14px; padding: 13px 48px 13px 44px; }
+
   .main { flex-direction: column; }
-  .sidebar { width: 100%; min-width: 0; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
-  .results-area { max-height: none; }
+
+  /* Sidebar collassabile */
+  .sidebar {
+    width: 100%; min-width: 0;
+    max-height: 0; overflow: hidden;
+    padding: 0 16px;
+    border-right: none;
+    border-bottom: none;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+  }
+  .sidebar.mobile-open {
+    max-height: 2000px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-toggle-btn { display: flex; }
+
+  .results-area {
+    max-height: none;
+    padding: 16px;
+  }
+  .results-header { flex-wrap: wrap; gap: 10px; }
+  .sort-select { width: 100%; }
+  .candidate-card { padding: 16px; }
+  .candidate-name { font-size: 16px; }
+  .card-top { gap: 10px; }
+  .match-score { font-size: 16px; padding: 3px 9px; }
+  .candidate-meta { gap: 8px; font-size: 11px; }
+  .modal { padding: 20px 16px; }
+  .modal-name { font-size: 20px; }
+  .modal-info-grid { grid-template-columns: 1fr; }
+  .pagination { flex-wrap: wrap; }
+}
+
+/* ─── RESPONSIVE — MOBILE (≤480px) ──────────────── */
+@media (max-width: 480px) {
+  .header { padding: 12px 14px 12px; }
+  .logo { font-size: 22px; letter-spacing: 1px; }
+  .logo-subtitle { display: none; }
+  .stats-bar { gap: 10px; }
+  .stat-value { font-size: 14px; }
+  .stat-label { font-size: 8px; }
+  .search-bar { font-size: 13px; padding: 12px 42px 12px 40px; }
+
+  .results-area { padding: 12px; }
+  .candidate-card { padding: 14px 12px; }
+  .candidate-name { font-size: 15px; }
+  .card-right { min-width: 56px; }
+  .match-score { font-size: 14px; padding: 2px 8px; }
+  .ats-status { font-size: 9px; padding: 2px 7px; }
+  .card-skills { gap: 4px; }
+  .skill-tag { font-size: 10px; padding: 2px 8px; }
+  .candidate-meta span { font-size: 10px; }
+  .page-btn { padding: 6px 10px; font-size: 12px; }
+  .modal { border-radius: 12px 12px 0 0; width: 100%; max-width: 100%; align-self: flex-end; max-height: 90vh; }
+  .modal-overlay { align-items: flex-end; }
 }
 </style>
 </head>
@@ -482,6 +561,10 @@ body {
 <div class="main">
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
+    <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleMobileFilters()">
+      <span>&#127989; Filtri di ricerca</span>
+      <span class="toggle-arrow">&#9660;</span>
+    </button>
     <div class="active-filters" id="activeFilters"></div>
 
     <div class="filter-section">
@@ -540,6 +623,16 @@ body {
       <div class="filter-title">&#127760; Lingua</div>
       <select class="filter-select" id="filterLanguage" onchange="applyFilters()">
         <option value="">Tutte le lingue</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#127979; Titolo di Studio</div>
+      <select class="filter-select" id="filterDegree" onchange="applyFilters()">
+        <option value="">Tutti i titoli</option>
+        <option value="Bachelor">Laurea Triennale (Bachelor)</option>
+        <option value="Master">Laurea Magistrale (Master)</option>
+        <option value="PhD">Dottorato (PhD)</option>
       </select>
     </div>
 
@@ -796,6 +889,7 @@ function applyFilters() {
   const expMin = parseInt(document.getElementById('expMin').value) || 0;
   const expMax = parseInt(document.getElementById('expMax').value) || 999;
   const language = document.getElementById('filterLanguage').value;
+  const degree = document.getElementById('filterDegree').value;
   const status = document.getElementById('filterStatus').value;
   const sortBy = document.getElementById('sortSelect').value;
 
@@ -813,6 +907,7 @@ function applyFilters() {
     const yoe = c.current_status.years_of_experience;
     if (yoe < expMin || yoe > expMax) return false;
     if (language && !c.languages.some(l => l.language === language)) return false;
+    if (degree && !c.education.some(e => e.degree === degree)) return false;
     if (status && c.ats_metadata.application_status !== status) return false;
 
     // Keyword filter
@@ -961,6 +1056,7 @@ function renderActiveFilters() {
   const loc = document.getElementById('filterLocation').value;
   const gen = document.getElementById('filterGender').value;
   const lang = document.getElementById('filterLanguage').value;
+  const deg = document.getElementById('filterDegree').value;
   const status = document.getElementById('filterStatus').value;
   const ageMin = document.getElementById('ageMin').value;
   const ageMax = document.getElementById('ageMax').value;
@@ -972,6 +1068,7 @@ function renderActiveFilters() {
   if (loc) tags.push({ label: loc, clear: () => { document.getElementById('filterLocation').value = ''; applyFilters(); } });
   if (gen) tags.push({ label: gen === 'M' ? 'Uomo' : 'Donna', clear: () => { document.getElementById('filterGender').value = ''; applyFilters(); } });
   if (lang) tags.push({ label: lang, clear: () => { document.getElementById('filterLanguage').value = ''; applyFilters(); } });
+  if (deg) tags.push({ label: deg, clear: () => { document.getElementById('filterDegree').value = ''; applyFilters(); } });
   if (status) tags.push({ label: status.replace(/_/g, ' '), clear: () => { document.getElementById('filterStatus').value = ''; applyFilters(); } });
   if (ageMin || ageMax) tags.push({ label: `Età ${ageMin||'?'}-${ageMax||'?'}`, clear: () => { document.getElementById('ageMin').value = ''; document.getElementById('ageMax').value = ''; applyFilters(); } });
   if (expMin || expMax) tags.push({ label: `Exp ${expMin||'?'}-${expMax||'?'} anni`, clear: () => { document.getElementById('expMin').value = ''; document.getElementById('expMax').value = ''; applyFilters(); } });
@@ -1089,6 +1186,7 @@ function clearAllFilters() {
   document.getElementById('filterLocation').value = '';
   document.getElementById('filterGender').value = '';
   document.getElementById('filterLanguage').value = '';
+  document.getElementById('filterDegree').value = '';
   document.getElementById('filterStatus').value = '';
   document.getElementById('ageMin').value = '';
   document.getElementById('ageMax').value = '';
@@ -1111,6 +1209,25 @@ document.getElementById('searchBar').addEventListener('input', () => {
 
 // Close modal on Escape
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── MOBILE FILTER TOGGLE ─────────────────────────────────────────────────────
+function toggleMobileFilters() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('filterToggleBtn');
+  sidebar.classList.toggle('mobile-open');
+  btn.classList.toggle('open');
+}
+
+// On desktop keep sidebar always open; on mobile keep closed by default
+function handleResize() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('filterToggleBtn');
+  if (window.innerWidth > 900) {
+    sidebar.classList.remove('mobile-open');
+    btn.classList.remove('open');
+  }
+}
+window.addEventListener('resize', handleResize);
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 loadDatabase();
