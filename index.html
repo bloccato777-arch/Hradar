@@ -492,6 +492,242 @@ body {
   transition: width 0.4s ease;
 }
 
+/* ─── NAV TABS ───────────────────────────────────── */
+.nav-tabs {
+  display: flex; gap: 4px; margin-bottom: 14px;
+}
+.nav-tab {
+  padding: 7px 18px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer; border: 1px solid var(--border-light);
+  background: none; color: var(--text-muted);
+  font-family: 'Inter', sans-serif; transition: all 0.2s;
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-tab:hover { color: var(--text-secondary); border-color: var(--border-light); }
+.nav-tab.active {
+  background: var(--accent-glow); color: var(--accent);
+  border-color: rgba(0,212,255,0.35);
+}
+.nav-tab .tab-badge {
+  background: var(--accent); color: var(--bg-primary);
+  font-size: 10px; font-weight: 800; padding: 1px 6px;
+  border-radius: 10px; min-width: 18px; text-align: center;
+}
+.nav-tab.pipeline-tab.active {
+  background: rgba(168,85,247,0.12); color: var(--accent-purple);
+  border-color: rgba(168,85,247,0.35);
+}
+.nav-tab.pipeline-tab.active .tab-badge {
+  background: var(--accent-purple);
+}
+
+/* ─── PIPELINE VIEW ──────────────────────────────── */
+.pipeline-view {
+  display: none; flex: 1; flex-direction: column;
+  overflow: hidden;
+}
+.pipeline-view.active { display: flex; }
+
+.pipeline-toolbar {
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-secondary); flex-shrink: 0;
+}
+.pipeline-title {
+  font-size: 13px; color: var(--text-muted); flex: 1;
+}
+.pipeline-toolbar-btn {
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light); background: var(--bg-card);
+  color: var(--text-secondary); font-size: 12px; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.pipeline-toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pipeline-toolbar-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+/* ─── KANBAN BOARD ───────────────────────────────── */
+.kanban-scroll {
+  flex: 1; overflow-x: auto; overflow-y: hidden;
+  padding: 20px 24px;
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+}
+.kanban-board {
+  display: flex; gap: 14px;
+  height: 100%; min-height: calc(100vh - 280px);
+  min-width: max-content;
+}
+.kanban-col {
+  width: 240px; min-width: 240px;
+  display: flex; flex-direction: column;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.kanban-col.drag-over {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.kanban-col-header {
+  padding: 12px 14px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.kanban-col-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; display: flex; align-items: center; gap: 7px;
+}
+.stage-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.kanban-col-count {
+  font-size: 11px; color: var(--text-muted);
+  background: var(--bg-primary); padding: 2px 8px;
+  border-radius: 10px; font-family: 'Orbitron', monospace;
+}
+.kanban-cards {
+  flex: 1; overflow-y: auto; padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+  min-height: 60px;
+}
+.kanban-cards.drag-over-inner {
+  background: rgba(0,212,255,0.04);
+}
+
+/* ─── KANBAN CARDS ───────────────────────────────── */
+.k-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+  cursor: grab; transition: all 0.2s; position: relative;
+}
+.k-card:hover {
+  border-color: var(--border-light);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.k-card.dragging {
+  opacity: 0.4; cursor: grabbing; transform: rotate(1deg);
+}
+.k-card-name {
+  font-size: 13px; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 3px; line-height: 1.3;
+}
+.k-card-title {
+  font-size: 11px; color: var(--accent); margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.k-card-meta {
+  font-size: 10px; color: var(--text-muted);
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.k-card-actions {
+  display: flex; gap: 5px; margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.k-card-btn {
+  flex: 1; padding: 4px 6px; background: var(--bg-primary);
+  border: 1px solid var(--border-light); border-radius: 5px;
+  color: var(--text-muted); font-size: 10px; cursor: pointer;
+  transition: all 0.15s; text-align: center;
+}
+.k-card-btn:hover { color: var(--accent); border-color: rgba(0,212,255,0.3); }
+.k-card-btn.danger:hover { color: #ef4444; border-color: rgba(239,68,68,0.3); }
+.k-card-stars {
+  display: flex; gap: 2px; margin-top: 5px;
+}
+.k-star {
+  font-size: 12px; cursor: pointer; color: var(--border-light);
+  transition: color 0.15s;
+}
+.k-star.lit { color: #f59e0b; }
+.k-star:hover { color: #f59e0b; }
+
+/* ─── NOTES PANEL (slide-in) ──────────────────────── */
+.notes-panel-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.notes-panel-overlay.open { opacity: 1; pointer-events: all; }
+.notes-panel {
+  position: fixed; right: -420px; top: 0; bottom: 0;
+  width: 400px; background: var(--bg-secondary);
+  border-left: 1px solid var(--border-light);
+  z-index: 501; transition: right 0.3s ease;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.notes-panel-overlay.open .notes-panel { right: 0; }
+.notes-panel-header {
+  padding: 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0;
+}
+.notes-panel-name { font-size: 16px; font-weight: 700; flex: 1; }
+.notes-panel-role { font-size: 12px; color: var(--accent); margin-top: 2px; }
+.notes-panel-close {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 20px; cursor: pointer; padding: 0; line-height: 1;
+}
+.notes-panel-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.notes-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px;
+}
+.notes-rating-row { display: flex; gap: 6px; }
+.notes-star {
+  font-size: 22px; cursor: pointer; color: var(--border-light);
+  transition: color 0.15s; line-height: 1;
+}
+.notes-star.lit { color: #f59e0b; }
+.notes-star:hover { color: #f59e0b; }
+.notes-textarea {
+  width: 100%; min-height: 120px; padding: 12px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-size: 13px; font-family: 'Inter', sans-serif;
+  resize: vertical; outline: none; line-height: 1.6;
+}
+.notes-textarea:focus { border-color: var(--accent); }
+.notes-save-btn {
+  padding: 10px; background: var(--accent); border: none;
+  border-radius: var(--radius-sm); color: var(--bg-primary);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: opacity 0.2s;
+}
+.notes-save-btn:hover { opacity: 0.85; }
+.notes-history {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.history-item {
+  padding: 8px 10px; background: var(--bg-card);
+  border-radius: 6px; font-size: 11px; color: var(--text-muted);
+  border-left: 2px solid var(--border-light);
+}
+.history-item .h-from { color: var(--text-secondary); }
+.history-item .h-date { color: var(--text-muted); font-size: 10px; margin-top: 2px; }
+
+/* ─── TOAST ───────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 30px; padding: 10px 20px;
+  font-size: 13px; color: var(--text-primary);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  z-index: 9999; transition: transform 0.3s ease; pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── ADD TO PIPELINE BTN on search cards ──────────── */
+.pipeline-add-btn {
+  padding: 3px 10px; font-size: 10px; font-weight: 600;
+  border-radius: 12px; border: 1px solid var(--border-light);
+  background: none; color: var(--text-muted); cursor: pointer;
+  transition: all 0.15s; white-space: nowrap; font-family: 'Inter', sans-serif;
+}
+.pipeline-add-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+.pipeline-add-btn.in-pipeline {
+  border-color: rgba(168,85,247,0.4); color: var(--accent-purple);
+  background: rgba(168,85,247,0.08);
+}
+
 /* ─── MOBILE TOGGLE BUTTON ───────────────────────── */
 .filter-toggle-btn {
   display: none;
@@ -621,17 +857,28 @@ body {
            placeholder="Cerca per nome, competenza, azienda, ruolo, parola chiave...">
     <button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
   </div>
-  <div class="ai-toggle-wrap">
-    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAISearch()">
-      <span class="ai-dot"></span>
-      &#129504; AI Semantic Search
-    </button>
-    <span class="ai-status-text" id="aiStatusText">Modalità parole chiave attiva</span>
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabSearch" onclick="switchView('search')">
+        &#128269; Ricerca Candidati
+      </button>
+      <button class="nav-tab pipeline-tab" id="tabPipeline" onclick="switchView('pipeline')">
+        &#128336; Pipeline
+        <span class="tab-badge" id="pipelineBadge">0</span>
+      </button>
+    </div>
+    <div class="ai-toggle-wrap" style="margin-top:0;">
+      <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAISearch()">
+        <span class="ai-dot"></span>
+        &#129504; AI Search
+      </button>
+      <span class="ai-status-text" id="aiStatusText">Keywords</span>
+    </div>
   </div>
 </header>
 
 <!-- Main -->
-<div class="main">
+<div class="main" id="searchMain">
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar">
     <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleMobileFilters()">
@@ -747,6 +994,55 @@ body {
     <div class="pagination" id="pagination"></div>
   </div>
 </div>
+
+<!-- Pipeline View -->
+<div class="pipeline-view" id="pipelineView">
+  <div class="pipeline-toolbar">
+    <span class="pipeline-title" id="pipelineToolbarInfo">Trascina i candidati tra le colonne per aggiornare il loro stage</span>
+    <button class="pipeline-toolbar-btn" onclick="exportPipeline()">&#11015; Esporta CSV</button>
+    <button class="pipeline-toolbar-btn danger" onclick="clearPipeline()">&#128465; Svuota pipeline</button>
+  </div>
+  <div class="kanban-scroll">
+    <div class="kanban-board" id="kanbanBoard"></div>
+  </div>
+</div>
+
+<!-- Notes Panel -->
+<div class="notes-panel-overlay" id="notesPanelOverlay" onclick="if(event.target===this)closeNotesPanel()">
+  <div class="notes-panel" id="notesPanel">
+    <div class="notes-panel-header">
+      <div style="flex:1;">
+        <div class="notes-panel-name" id="notesPanelName">—</div>
+        <div class="notes-panel-role" id="notesPanelRole">—</div>
+      </div>
+      <button class="notes-panel-close" onclick="closeNotesPanel()">&#10005;</button>
+    </div>
+    <div class="notes-panel-body">
+      <div>
+        <div class="notes-label">Rating</div>
+        <div class="notes-rating-row" id="notesPanelStars">
+          <span class="notes-star" onclick="setNoteRating(1)">&#9733;</span>
+          <span class="notes-star" onclick="setNoteRating(2)">&#9733;</span>
+          <span class="notes-star" onclick="setNoteRating(3)">&#9733;</span>
+          <span class="notes-star" onclick="setNoteRating(4)">&#9733;</span>
+          <span class="notes-star" onclick="setNoteRating(5)">&#9733;</span>
+        </div>
+      </div>
+      <div>
+        <div class="notes-label">Note del Recruiter</div>
+        <textarea class="notes-textarea" id="notesPanelText" placeholder="Aggiungi note, osservazioni, feedback colloquio..."></textarea>
+      </div>
+      <button class="notes-save-btn" onclick="saveNotes()">&#10003; Salva Note</button>
+      <div>
+        <div class="notes-label">Storico Movimenti</div>
+        <div class="notes-history" id="notesPanelHistory"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
 // ─── GLOBALS ──────────────────────────────────────────────────────────────────
@@ -958,6 +1254,334 @@ function getCategoryForTitle(title) {
     if (titles.includes(title)) return cat;
   }
   return "Other";
+}
+
+// ─── PIPELINE CONSTANTS ───────────────────────────────────────────────────────
+const STAGES = [
+  { id: 'new',                label: 'New',               color: '#64748b' },
+  { id: 'screening',          label: 'Screening',         color: '#0891b2' },
+  { id: 'phone_interview',    label: 'Phone Interview',   color: '#7c3aed' },
+  { id: 'technical_interview',label: 'Technical',         color: '#d97706' },
+  { id: 'final_interview',    label: 'Final Interview',   color: '#dc2626' },
+  { id: 'offer_extended',     label: 'Offer Extended',    color: '#16a34a' },
+  { id: 'hired',              label: 'Hired ✓',           color: '#15803d' },
+  { id: 'rejected',           label: 'Rejected',          color: '#7f1d1d' },
+];
+const LS_KEY = 'hradar_pipeline_v1';
+
+// ─── PIPELINE STATE ───────────────────────────────────────────────────────────
+let pipelineData = {}; // candidate_id → { stage, addedAt, notes, rating, history[] }
+let notesCandidateId = null; // currently open notes panel
+let dragSrcId = null;        // candidate_id being dragged
+let currentView = 'search';
+
+// ─── LOAD / SAVE PIPELINE ─────────────────────────────────────────────────────
+function loadPipeline() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) pipelineData = JSON.parse(raw);
+  } catch(e) { pipelineData = {}; }
+  updatePipelineBadge();
+}
+
+function savePipeline() {
+  localStorage.setItem(LS_KEY, JSON.stringify(pipelineData));
+  updatePipelineBadge();
+}
+
+function updatePipelineBadge() {
+  const count = Object.keys(pipelineData).length;
+  document.getElementById('pipelineBadge').textContent = count;
+  const info = document.getElementById('pipelineToolbarInfo');
+  if (info) info.textContent = count === 0
+    ? 'Nessun candidato in pipeline — aggiungili dalla ricerca con il bottone ＋ Pipeline'
+    : `${count} candidat${count===1?'o':'i'} in pipeline · trascina tra le colonne per cambiare stage`;
+}
+
+// ─── ADD / REMOVE CANDIDATE ───────────────────────────────────────────────────
+function addToPipeline(candidateId) {
+  if (pipelineData[candidateId]) {
+    // Already in pipeline → go to pipeline view
+    switchView('pipeline');
+    showToast('&#128336; Candidato già in pipeline');
+    return;
+  }
+  const now = new Date().toISOString();
+  pipelineData[candidateId] = {
+    stage: 'new',
+    addedAt: now,
+    notes: '',
+    rating: 0,
+    history: [{ from: null, to: 'new', at: now, note: 'Aggiunto alla pipeline' }],
+  };
+  savePipeline();
+  renderResults(); // refresh search cards to update button state
+  if (currentView === 'pipeline') renderKanban();
+  showToast('&#10010; Aggiunto alla pipeline!');
+}
+
+function removeFromPipeline(candidateId) {
+  if (!confirm('Rimuovere questo candidato dalla pipeline?')) return;
+  delete pipelineData[candidateId];
+  savePipeline();
+  renderKanban();
+  renderResults();
+  showToast('&#128465; Candidato rimosso dalla pipeline');
+}
+
+function moveStage(candidateId, newStage) {
+  const entry = pipelineData[candidateId];
+  if (!entry || entry.stage === newStage) return;
+  const oldStage = entry.stage;
+  entry.history.push({ from: oldStage, to: newStage, at: new Date().toISOString(), note: '' });
+  entry.stage = newStage;
+  savePipeline();
+  renderKanban();
+  renderResults();
+  const stageName = STAGES.find(s=>s.id===newStage)?.label || newStage;
+  showToast(`&#8594; Spostato in <strong>${stageName}</strong>`);
+}
+
+// ─── VIEW SWITCHER ────────────────────────────────────────────────────────────
+function switchView(view) {
+  currentView = view;
+  const searchMain = document.getElementById('searchMain');
+  const pipelineView = document.getElementById('pipelineView');
+  const tabSearch = document.getElementById('tabSearch');
+  const tabPipeline = document.getElementById('tabPipeline');
+
+  if (view === 'pipeline') {
+    searchMain.style.display = 'none';
+    pipelineView.classList.add('active');
+    tabSearch.classList.remove('active');
+    tabPipeline.classList.add('active');
+    renderKanban();
+  } else {
+    searchMain.style.display = 'flex';
+    pipelineView.classList.remove('active');
+    tabSearch.classList.add('active');
+    tabPipeline.classList.remove('active');
+  }
+}
+
+// ─── KANBAN RENDER ────────────────────────────────────────────────────────────
+function renderKanban() {
+  const board = document.getElementById('kanbanBoard');
+  if (!board) return;
+
+  // Group candidates by stage
+  const byStage = {};
+  STAGES.forEach(s => { byStage[s.id] = []; });
+  for (const [cid, entry] of Object.entries(pipelineData)) {
+    const stageId = entry.stage || 'new';
+    if (!byStage[stageId]) byStage[stageId] = [];
+    const candidate = allCandidates.find(c => c.candidate_id === cid);
+    if (candidate) byStage[stageId].push({ candidate, entry });
+  }
+
+  board.innerHTML = STAGES.map(stage => {
+    const cards = byStage[stage.id] || [];
+    const cardsHtml = cards.map(({ candidate: c, entry }) => {
+      const stars = Array.from({length: 5}, (_, i) =>
+        `<span class="k-star ${i < entry.rating ? 'lit' : ''}">${'★'}</span>`
+      ).join('');
+      return `
+      <div class="k-card" draggable="true"
+           ondragstart="onDragStart(event,'${c.candidate_id}')"
+           ondragend="onDragEnd(event)"
+           >
+        <div class="k-card-name">${c.personal_info.full_name}</div>
+        <div class="k-card-title">${c.current_status.current_title || c.current_status.headline}</div>
+        <div class="k-card-meta">
+          <span>&#128205; ${c.personal_info.location.city}</span>
+          <span>&#9201; ${c.current_status.years_of_experience}y</span>
+        </div>
+        <div class="k-card-stars">${stars}</div>
+        <div class="k-card-actions">
+          <button class="k-card-btn" onclick="openNotesPanel('${c.candidate_id}')">&#128203; Note</button>
+          <button class="k-card-btn" onclick="openModal_byId('${c.candidate_id}')">&#128065; Profilo</button>
+          <button class="k-card-btn danger" onclick="removeFromPipeline('${c.candidate_id}')">&#10005;</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="kanban-col" id="col-${stage.id}"
+         ondragover="onDragOver(event,'${stage.id}')"
+         ondragleave="onDragLeave(event,'${stage.id}')"
+         ondrop="onDrop(event,'${stage.id}')">
+      <div class="kanban-col-header">
+        <div class="kanban-col-title">
+          <span class="stage-dot" style="background:${stage.color}"></span>
+          ${stage.label}
+        </div>
+        <span class="kanban-col-count">${cards.length}</span>
+      </div>
+      <div class="kanban-cards" id="cards-${stage.id}">${cardsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── DRAG AND DROP ────────────────────────────────────────────────────────────
+function onDragStart(event, candidateId) {
+  dragSrcId = candidateId;
+  event.currentTarget.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', candidateId);
+}
+function onDragEnd(event) {
+  event.currentTarget.classList.remove('dragging');
+  // Clean up all drag-over highlights
+  document.querySelectorAll('.kanban-col').forEach(col => {
+    col.classList.remove('drag-over');
+    col.querySelector('.kanban-cards')?.classList.remove('drag-over-inner');
+  });
+}
+function onDragOver(event, stageId) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  const col = document.getElementById('col-' + stageId);
+  col?.classList.add('drag-over');
+  col?.querySelector('.kanban-cards')?.classList.add('drag-over-inner');
+}
+function onDragLeave(event, stageId) {
+  // Only remove if leaving the column entirely
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    const col = document.getElementById('col-' + stageId);
+    col?.classList.remove('drag-over');
+    col?.querySelector('.kanban-cards')?.classList.remove('drag-over-inner');
+  }
+}
+function onDrop(event, stageId) {
+  event.preventDefault();
+  const col = document.getElementById('col-' + stageId);
+  col?.classList.remove('drag-over');
+  col?.querySelector('.kanban-cards')?.classList.remove('drag-over-inner');
+  const cid = event.dataTransfer.getData('text/plain') || dragSrcId;
+  if (cid) moveStage(cid, stageId);
+  dragSrcId = null;
+}
+
+// ─── OPEN PROFILE FROM PIPELINE ───────────────────────────────────────────────
+function openModal_byId(candidateId) {
+  const idx = filteredCandidates.findIndex(c => c.candidate_id === candidateId);
+  if (idx >= 0) { openModal(idx); return; }
+  // Not in current search results — find globally
+  const globalIdx = allCandidates.findIndex(c => c.candidate_id === candidateId);
+  if (globalIdx < 0) return;
+  // Temporarily make it available
+  const tmp = filteredCandidates;
+  filteredCandidates = allCandidates;
+  openModal(globalIdx);
+  filteredCandidates = tmp;
+}
+
+// ─── NOTES PANEL ─────────────────────────────────────────────────────────────
+function openNotesPanel(candidateId) {
+  notesCandidateId = candidateId;
+  const entry = pipelineData[candidateId];
+  const candidate = allCandidates.find(c => c.candidate_id === candidateId);
+  if (!candidate || !entry) return;
+
+  document.getElementById('notesPanelName').textContent = candidate.personal_info.full_name;
+  document.getElementById('notesPanelRole').textContent = candidate.current_status.headline;
+  document.getElementById('notesPanelText').value = entry.notes || '';
+
+  // Stars
+  renderNoteStars(entry.rating || 0);
+
+  // History
+  const histEl = document.getElementById('notesPanelHistory');
+  if (entry.history && entry.history.length > 0) {
+    histEl.innerHTML = [...entry.history].reverse().map(h => {
+      const stageLabel = STAGES.find(s=>s.id===h.to)?.label || h.to;
+      const fromLabel = h.from ? (STAGES.find(s=>s.id===h.from)?.label || h.from) : '—';
+      const date = new Date(h.at).toLocaleDateString('it-IT', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      return `<div class="history-item">
+        <div class="h-from">${h.note || (h.from ? `${fromLabel} → <strong>${stageLabel}</strong>` : stageLabel)}</div>
+        <div class="h-date">&#128337; ${date}</div>
+      </div>`;
+    }).join('');
+  } else {
+    histEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted)">Nessun movimento registrato.</div>';
+  }
+
+  document.getElementById('notesPanelOverlay').classList.add('open');
+}
+
+function renderNoteStars(rating) {
+  document.querySelectorAll('#notesPanelStars .notes-star').forEach((el, i) => {
+    el.classList.toggle('lit', i < rating);
+  });
+}
+
+function setNoteRating(r) {
+  if (!notesCandidateId || !pipelineData[notesCandidateId]) return;
+  pipelineData[notesCandidateId].rating = r;
+  renderNoteStars(r);
+}
+
+function saveNotes() {
+  if (!notesCandidateId || !pipelineData[notesCandidateId]) return;
+  pipelineData[notesCandidateId].notes = document.getElementById('notesPanelText').value;
+  savePipeline();
+  renderKanban();
+  closeNotesPanel();
+  showToast('&#10003; Note salvate');
+}
+
+function closeNotesPanel() {
+  document.getElementById('notesPanelOverlay').classList.remove('open');
+  notesCandidateId = null;
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────────────────────────
+function exportPipeline() {
+  if (Object.keys(pipelineData).length === 0) { showToast('Pipeline vuota'); return; }
+  const rows = [['Nome','Ruolo','Città','Età','Esperienza','Stage','Rating','Note','Aggiunto il']];
+  for (const [cid, entry] of Object.entries(pipelineData)) {
+    const c = allCandidates.find(x => x.candidate_id === cid);
+    if (!c) continue;
+    const stageLabel = STAGES.find(s=>s.id===entry.stage)?.label || entry.stage;
+    rows.push([
+      c.personal_info.full_name,
+      c.current_status.headline,
+      c.personal_info.location.city,
+      c.personal_info.age,
+      c.current_status.years_of_experience,
+      stageLabel,
+      entry.rating || 0,
+      (entry.notes || '').replace(/\n/g, ' '),
+      new Date(entry.addedAt).toLocaleDateString('it-IT'),
+    ]);
+  }
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `hradar_pipeline_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('&#11015; CSV esportato');
+}
+
+// ─── CLEAR PIPELINE ───────────────────────────────────────────────────────────
+function clearPipeline() {
+  if (!confirm(`Svuotare tutta la pipeline (${Object.keys(pipelineData).length} candidati)?`)) return;
+  pipelineData = {};
+  savePipeline();
+  renderKanban();
+  renderResults();
+  showToast('Pipeline svuotata');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimeout;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.innerHTML = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
 // ─── LOAD DATA ────────────────────────────────────────────────────────────────
@@ -1238,6 +1862,13 @@ function renderResults() {
     const aiLabel = (aiMode && c._aiScore !== null && c._aiScore !== undefined)
       ? `<span class="ai-match-badge">&#129504; AI</span>` : '';
 
+    const inPipeline = !!pipelineData[c.candidate_id];
+    const pipelineStage = inPipeline ? pipelineData[c.candidate_id].stage : null;
+    const pipelineBtnLabel = inPipeline
+      ? `&#128336; ${STAGES.find(s=>s.id===pipelineStage)?.label || 'Pipeline'}`
+      : '＋ Pipeline';
+    const pipelineBtnClass = inPipeline ? 'pipeline-add-btn in-pipeline' : 'pipeline-add-btn';
+
     return `
     <div class="candidate-card" onclick="openModal(${start + i})">
       <div class="card-top">
@@ -1256,7 +1887,10 @@ function renderResults() {
           <div class="ats-status ${statusClass}">${statusLabel}</div>
         </div>
       </div>
-      <div class="card-skills">${skillTags}</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+        <div class="card-skills" style="flex:1;">${skillTags}</div>
+        <button class="${pipelineBtnClass}" onclick="event.stopPropagation(); addToPipeline('${c.candidate_id}')">${pipelineBtnLabel}</button>
+      </div>
       ${aiBarHtml}
     </div>`;
   }).join('');
@@ -1482,6 +2116,7 @@ function handleResize() {
 window.addEventListener('resize', handleResize);
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+loadPipeline();
 loadDatabase();
 </script>
 </body>
