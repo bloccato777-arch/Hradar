@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRadar — Talent Search Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2236;
+  --bg-card-hover: #1f2a42;
+  --accent: #00d4ff;
+  --accent-dim: #0891b2;
+  --accent-glow: rgba(0, 212, 255, 0.15);
+  --accent-orange: #f97316;
+  --accent-green: #22c55e;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --border-light: #334155;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* ─── HEADER ─────────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0f172a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 40px 24px;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(16px);
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900; font-size: 36px;
+  background: linear-gradient(135deg, var(--accent), #38bdf8, var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: 4px;
+  text-shadow: 0 0 40px rgba(0,212,255,0.3);
+  position: relative;
+}
+.logo::after {
+  content: ''; position: absolute; bottom: -4px; left: 0;
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.logo-subtitle {
+  font-size: 11px; letter-spacing: 3px; color: var(--text-muted);
+  text-transform: uppercase; margin-top: 6px;
+  font-family: 'Inter', sans-serif; font-weight: 500;
+}
+.stats-bar {
+  display: flex; gap: 28px; align-items: center;
+}
+.stat-item { text-align: center; }
+.stat-value {
+  font-family: 'Orbitron', monospace; font-size: 22px; font-weight: 700;
+  color: var(--accent);
+}
+.stat-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-muted); margin-top: 2px;
+}
+/* ─── SEARCH BAR ─────────────────────────────────── */
+.search-container {
+  position: relative; max-width: 780px; margin: 0 auto;
+}
+.search-bar {
+  width: 100%; padding: 16px 56px 16px 52px;
+  background: var(--bg-card); border: 2px solid var(--border-light);
+  border-radius: 50px; color: var(--text-primary);
+  font-size: 16px; font-family: 'Inter', sans-serif;
+  transition: all 0.3s; outline: none;
+}
+.search-bar:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-glow), 0 0 30px rgba(0,212,255,0.1);
+}
+.search-bar::placeholder { color: var(--text-muted); }
+.search-icon {
+  position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 18px; pointer-events: none;
+}
+.search-clear {
+  position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--text-muted);
+  font-size: 18px; cursor: pointer; display: none; padding: 4px;
+}
+.search-clear.visible { display: block; }
+.search-clear:hover { color: var(--text-primary); }
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.main {
+  display: flex; gap: 0; min-height: calc(100vh - 170px);
+}
+/* ─── SIDEBAR FILTERS ────────────────────────────── */
+.sidebar {
+  width: 310px; min-width: 310px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  padding: 24px 20px;
+  overflow-y: auto; max-height: calc(100vh - 170px);
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+}
+.filter-section { margin-bottom: 22px; }
+.filter-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.filter-title svg { width: 14px; height: 14px; opacity: 0.5; }
+
+/* Select dropdowns */
+.filter-select {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-size: 13px; font-family: 'Inter', sans-serif;
+  cursor: pointer; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.filter-select:focus { border-color: var(--accent); }
+.filter-select option { background: var(--bg-card); color: var(--text-primary); }
+
+/* Range slider */
+.range-group { display: flex; flex-direction: column; gap: 6px; }
+.range-labels {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-secondary);
+}
+.range-inputs { display: flex; gap: 8px; align-items: center; }
+.range-input {
+  width: 100%; padding: 9px 12px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+  text-align: center;
+}
+.range-input:focus { border-color: var(--accent); }
+.range-sep { color: var(--text-muted); font-size: 14px; }
+
+/* Checkbox filters */
+.checkbox-grid { display: flex; flex-direction: column; gap: 4px; }
+.checkbox-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 6px; cursor: pointer;
+  transition: background 0.15s;
+}
+.checkbox-item:hover { background: var(--bg-card); }
+.checkbox-item input[type="checkbox"] {
+  accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer;
+}
+.checkbox-item label {
+  font-size: 13px; color: var(--text-secondary); cursor: pointer; flex: 1;
+}
+.checkbox-item .count {
+  font-size: 11px; color: var(--text-muted);
+  background: var(--bg-primary); padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* Clear filters */
+.clear-filters-btn {
+  width: 100%; padding: 10px;
+  background: transparent; border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm); color: var(--text-muted);
+  font-size: 12px; cursor: pointer; transition: all 0.2s;
+  text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+.clear-filters-btn:hover {
+  border-color: var(--accent-orange); color: var(--accent-orange);
+}
+
+/* Active filter tags */
+.active-filters {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 16px; min-height: 0;
+}
+.active-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; background: var(--accent-glow);
+  border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 20px; font-size: 11px; color: var(--accent);
+}
+.active-tag button {
+  background: none; border: none; color: var(--accent);
+  cursor: pointer; font-size: 14px; line-height: 1;
+}
+
+/* ─── RESULTS AREA ───────────────────────────────── */
+.results-area {
+  flex: 1; padding: 24px 28px;
+  overflow-y: auto; max-height: calc(100vh - 170px);
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+}
+.results-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+.results-count {
+  font-size: 14px; color: var(--text-secondary);
+}
+.results-count strong {
+  color: var(--accent); font-family: 'Orbitron', monospace; font-size: 16px;
+}
+.sort-select {
+  padding: 8px 14px; background: var(--bg-card);
+  border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 12px;
+  font-family: 'Inter', sans-serif; cursor: pointer; outline: none;
+}
+/* ─── CANDIDATE CARDS ────────────────────────────── */
+.candidates-grid {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.candidate-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  transition: all 0.25s;
+  cursor: pointer; position: relative; overflow: hidden;
+}
+.candidate-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent-dim);
+  box-shadow: 0 4px 20px rgba(0,212,255,0.08);
+  transform: translateY(-1px);
+}
+.candidate-card::before {
+  content: ''; position: absolute; left: 0; top: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--accent), var(--accent-purple));
+  opacity: 0; transition: opacity 0.25s;
+}
+.candidate-card:hover::before { opacity: 1; }
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.card-main { flex: 1; }
+.candidate-name {
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 3px;
+}
+.candidate-headline {
+  font-size: 13px; color: var(--accent); font-weight: 500;
+  margin-bottom: 8px;
+}
+.candidate-meta {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  font-size: 12px; color: var(--text-muted);
+}
+.candidate-meta span { display: flex; align-items: center; gap: 4px; }
+.card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.match-score {
+  font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700;
+  padding: 4px 12px; border-radius: 8px;
+}
+.match-high { color: var(--accent-green); background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); }
+.match-medium { color: var(--accent-orange); background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.2); }
+.match-low { color: var(--text-muted); background: var(--bg-primary); border: 1px solid var(--border); }
+.ats-status {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 20px; font-weight: 600;
+}
+.status-hired { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+.status-offer { background: rgba(249,115,22,0.15); color: var(--accent-orange); }
+.status-interview { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+.status-screening { background: rgba(0,212,255,0.15); color: var(--accent); }
+.status-new { background: rgba(241,245,249,0.1); color: var(--text-secondary); }
+.status-rejected { background: rgba(239,68,68,0.1); color: #ef4444; }
+.status-withdrawn { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+
+.card-skills {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px;
+}
+.skill-tag {
+  padding: 3px 10px; background: var(--bg-primary);
+  border: 1px solid var(--border-light); border-radius: 20px;
+  font-size: 11px; color: var(--text-secondary);
+}
+.skill-tag.highlight {
+  border-color: rgba(0,212,255,0.4); color: var(--accent);
+  background: var(--accent-glow);
+}
+.card-expand {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+.card-expand.open { display: block; }
+.expand-section { margin-bottom: 12px; }
+.expand-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px;
+}
+.expand-content { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+.exp-item { margin-bottom: 8px; }
+.exp-company { font-weight: 600; color: var(--text-primary); }
+.exp-title-text { color: var(--accent); }
+.exp-dates { font-size: 11px; color: var(--text-muted); }
+
+/* ─── PAGINATION ─────────────────────────────────── */
+.pagination {
+  display: flex; justify-content: center; align-items: center;
+  gap: 8px; margin-top: 28px; padding-bottom: 20px;
+}
+.page-btn {
+  padding: 8px 14px; background: var(--bg-card);
+  border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 13px;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active {
+  background: var(--accent); color: var(--bg-primary);
+  border-color: var(--accent); font-weight: 700;
+}
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ─── LOADING ────────────────────────────────────── */
+.loading-overlay {
+  position: fixed; inset: 0; background: var(--bg-primary);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.loading-overlay.hidden { display: none; }
+.loader-logo {
+  font-family: 'Orbitron', monospace; font-weight: 900; font-size: 48px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 30px;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.loader-bar {
+  width: 260px; height: 4px; background: var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+.loader-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+  border-radius: 4px; width: 0; transition: width 0.3s;
+}
+.loader-text {
+  margin-top: 16px; font-size: 13px; color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+/* ─── EMPTY STATE ────────────────────────────────── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 80px 20px;
+  color: var(--text-muted); text-align: center;
+}
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-title { font-size: 18px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.empty-text { font-size: 13px; max-width: 400px; line-height: 1.6; }
+
+/* ─── MODAL ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-secondary); border: 1px solid var(--border-light);
+  border-radius: 16px; width: 90%; max-width: 720px; max-height: 85vh;
+  overflow-y: auto; padding: 32px;
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+}
+.modal-close {
+  float: right; background: none; border: none;
+  color: var(--text-muted); font-size: 24px; cursor: pointer;
+}
+.modal-close:hover { color: var(--text-primary); }
+.modal-name {
+  font-size: 26px; font-weight: 700; margin-bottom: 4px;
+}
+.modal-headline {
+  font-size: 15px; color: var(--accent); margin-bottom: 16px;
+}
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-muted);
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-info-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.modal-info-item { font-size: 13px; }
+.modal-info-label { color: var(--text-muted); font-size: 11px; display: block; }
+.modal-info-value { color: var(--text-primary); font-weight: 500; }
+.modal-exp-item {
+  padding: 12px; background: var(--bg-card);
+  border-radius: var(--radius-sm); margin-bottom: 8px;
+}
+.modal-exp-company { font-weight: 600; font-size: 14px; }
+.modal-exp-title { color: var(--accent); font-size: 13px; }
+.modal-exp-dates { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.modal-exp-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.modal-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.modal-tag {
+  padding: 4px 12px; border-radius: 20px; font-size: 12px;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main { flex-direction: column; }
+  .sidebar { width: 100%; min-width: 0; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+  .results-area { max-height: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-logo">HRADAR</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+  <div class="loader-text" id="loaderText">Inizializzazione database...</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">HRADAR</div>
+      <div class="logo-subtitle">Talent Intelligence Platform</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-label">Candidati</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="statFiltered">—</div>
+        <div class="stat-label">Risultati</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="statCategories">—</div>
+        <div class="stat-label">Categorie</div>
+      </div>
+    </div>
+  </div>
+  <div class="search-container">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" class="search-bar" id="searchBar"
+           placeholder="Cerca per nome, competenza, azienda, ruolo, parola chiave...">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="active-filters" id="activeFilters"></div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128188; Macro-Categoria</div>
+      <select class="filter-select" id="filterCategory" onchange="applyFilters()">
+        <option value="">Tutte le categorie</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128188; Ruolo</div>
+      <select class="filter-select" id="filterRole" onchange="applyFilters()">
+        <option value="">Tutti i ruoli</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128205; Località</div>
+      <select class="filter-select" id="filterLocation" onchange="applyFilters()">
+        <option value="">Tutte le città</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128100; Sesso</div>
+      <select class="filter-select" id="filterGender" onchange="applyFilters()">
+        <option value="">Tutti</option>
+        <option value="M">Uomo</option>
+        <option value="F">Donna</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128197; Età</div>
+      <div class="range-group">
+        <div class="range-inputs">
+          <input type="number" class="range-input" id="ageMin" placeholder="Min" min="18" max="70" onchange="applyFilters()">
+          <span class="range-sep">—</span>
+          <input type="number" class="range-input" id="ageMax" placeholder="Max" min="18" max="70" onchange="applyFilters()">
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#9201; Anni di Esperienza</div>
+      <div class="range-group">
+        <div class="range-inputs">
+          <input type="number" class="range-input" id="expMin" placeholder="Min" min="0" max="50" onchange="applyFilters()">
+          <span class="range-sep">—</span>
+          <input type="number" class="range-input" id="expMax" placeholder="Max" min="0" max="50" onchange="applyFilters()">
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#127760; Lingua</div>
+      <select class="filter-select" id="filterLanguage" onchange="applyFilters()">
+        <option value="">Tutte le lingue</option>
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-title">&#128200; Status Candidatura</div>
+      <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+        <option value="">Tutti gli status</option>
+        <option value="new">New</option>
+        <option value="screening">Screening</option>
+        <option value="phone_interview">Phone Interview</option>
+        <option value="technical_interview">Technical Interview</option>
+        <option value="final_interview">Final Interview</option>
+        <option value="offer_extended">Offer Extended</option>
+        <option value="hired">Hired</option>
+        <option value="rejected">Rejected</option>
+        <option value="withdrawn">Withdrawn</option>
+      </select>
+    </div>
+
+    <button class="clear-filters-btn" onclick="clearAllFilters()">&#10005; Rimuovi tutti i filtri</button>
+  </aside>
+
+  <!-- Results -->
+  <div class="results-area" id="resultsArea">
+    <div class="results-header">
+      <div class="results-count" id="resultsCount"></div>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="relevance">Ordina per: Rilevanza</option>
+        <option value="name_asc">Nome A-Z</option>
+        <option value="name_desc">Nome Z-A</option>
+        <option value="exp_desc">Esperienza decrescente</option>
+        <option value="exp_asc">Esperienza crescente</option>
+        <option value="age_asc">Età crescente</option>
+        <option value="age_desc">Età decrescente</option>
+        <option value="rating_desc">Rating decrescente</option>
+      </select>
+    </div>
+    <div class="candidates-grid" id="candidatesGrid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+</div>
+
+<script>
+// ─── GLOBALS ──────────────────────────────────────────────────────────────────
+let allCandidates = [];
+let filteredCandidates = [];
+let currentPage = 1;
+const PER_PAGE = 25;
+
+// ─── JOB CATEGORIES ──────────────────────────────────────────────────────────
+const JOB_CATEGORIES = {
+  "Technology & Engineering": [
+    "Software Engineer","Senior Software Engineer","Frontend Developer","Backend Developer",
+    "Full Stack Developer","DevOps Engineer","Network Engineer","Cybersecurity Analyst",
+    "Cloud Architect","Quality Assurance Engineer","Machine Learning Engineer"
+  ],
+  "Data & Analytics": [
+    "Data Scientist","Data Analyst","Business Analyst"
+  ],
+  "Design & Creative": [
+    "UX Designer","UI Designer","Graphic Designer","Architect","Interior Designer"
+  ],
+  "Marketing & Communications": [
+    "Marketing Manager","Digital Marketing Specialist","SEO Specialist",
+    "Content Writer","Copywriter","Technical Writer","Journalist",
+    "Public Relations Specialist","Communications Manager"
+  ],
+  "Sales & Business Development": [
+    "Sales Manager","Account Manager","Business Development Manager"
+  ],
+  "Management & Strategy": [
+    "Product Manager","Project Manager","Scrum Master","Operations Manager",
+    "Management Consultant","Strategy Analyst","Urban Planner"
+  ],
+  "Finance & Accounting": [
+    "Financial Analyst","CFO","Accountant","Controller"
+  ],
+  "Human Resources": [
+    "HR Manager","Talent Acquisition Specialist","HR Business Partner"
+  ],
+  "Legal & Compliance": [
+    "Legal Counsel","Compliance Officer","Risk Analyst"
+  ],
+  "Supply Chain & Logistics": [
+    "Supply Chain Manager","Logistics Coordinator"
+  ],
+  "Customer Success & Support": [
+    "Customer Success Manager","Customer Support Specialist"
+  ],
+  "Healthcare & Pharma": [
+    "Pharmacist","Clinical Research Associate","Medical Device Specialist",
+    "Biomedical Engineer","Research Scientist"
+  ],
+  "Engineering (Non-Software)": [
+    "Mechanical Engineer","Civil Engineer","Electrical Engineer"
+  ],
+  "Education & Training": [
+    "Teacher","Trainer","E-learning Developer"
+  ],
+};
+
+function getCategoryForTitle(title) {
+  for (const [cat, titles] of Object.entries(JOB_CATEGORIES)) {
+    if (titles.includes(title)) return cat;
+  }
+  return "Other";
+}
+
+// ─── LOAD DATA ────────────────────────────────────────────────────────────────
+async function loadDatabase() {
+  const fill = document.getElementById('loaderFill');
+  const text = document.getElementById('loaderText');
+
+  fill.style.width = '20%';
+  text.textContent = 'Caricamento database CV...';
+
+  try {
+    const resp = await fetch('cv_database.json');
+    fill.style.width = '60%';
+    text.textContent = 'Parsing di 5000 profili...';
+
+    const data = await resp.json();
+    fill.style.width = '80%';
+    text.textContent = 'Indicizzazione e categorizzazione...';
+
+    allCandidates = data.candidates.map(c => {
+      const currentTitle = c.current_status.current_title || c.current_status.headline || '';
+      c._category = getCategoryForTitle(currentTitle);
+      // Build searchable text blob
+      c._searchBlob = [
+        c.personal_info.full_name,
+        c.personal_info.email,
+        c.current_status.headline,
+        c.current_status.current_title,
+        c.current_status.current_company,
+        c._category,
+        ...c.skills.all,
+        ...c.languages.map(l => l.language),
+        ...c.work_experience.map(w => `${w.company} ${w.title}`),
+        ...c.education.map(e => `${e.institution} ${e.field_of_study}`),
+        ...c.certifications.map(cert => cert.name),
+        c.professional_summary,
+      ].join(' ').toLowerCase();
+      return c;
+    });
+
+    fill.style.width = '95%';
+    text.textContent = 'Preparazione interfaccia...';
+
+    populateFilters();
+    applyFilters();
+    updateStats();
+
+    fill.style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }, 400);
+
+  } catch(e) {
+    text.textContent = 'Errore: ' + e.message + ' — assicurati che cv_database.json sia nella stessa cartella.';
+    fill.style.width = '100%';
+    fill.style.background = '#ef4444';
+  }
+}
+
+// ─── POPULATE FILTER OPTIONS ──────────────────────────────────────────────────
+function populateFilters() {
+  // Categories
+  const catSelect = document.getElementById('filterCategory');
+  Object.keys(JOB_CATEGORIES).sort().forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat; opt.textContent = cat;
+    catSelect.appendChild(opt);
+  });
+
+  // Roles
+  const roles = new Set();
+  allCandidates.forEach(c => {
+    if (c.current_status.current_title) roles.add(c.current_status.current_title);
+  });
+  const roleSelect = document.getElementById('filterRole');
+  [...roles].sort().forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r; opt.textContent = r;
+    roleSelect.appendChild(opt);
+  });
+
+  // Locations
+  const locs = new Set();
+  allCandidates.forEach(c => locs.add(c.personal_info.location.city));
+  const locSelect = document.getElementById('filterLocation');
+  [...locs].sort().forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l; opt.textContent = l;
+    locSelect.appendChild(opt);
+  });
+
+  // Languages
+  const langs = new Set();
+  allCandidates.forEach(c => c.languages.forEach(l => langs.add(l.language)));
+  const langSelect = document.getElementById('filterLanguage');
+  [...langs].sort().forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l; opt.textContent = l;
+    langSelect.appendChild(opt);
+  });
+}
+
+// ─── SEARCH SCORING ───────────────────────────────────────────────────────────
+function computeScore(candidate, query) {
+  if (!query) return candidate.ats_metadata.rating * 20;
+
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  let score = 0;
+
+  for (const term of terms) {
+    // Name match (high weight)
+    if (candidate.personal_info.full_name.toLowerCase().includes(term)) score += 50;
+    // Exact skill match
+    if (candidate.skills.all.some(s => s.toLowerCase() === term)) score += 40;
+    // Skill partial match
+    if (candidate.skills.all.some(s => s.toLowerCase().includes(term))) score += 25;
+    // Current title match
+    if ((candidate.current_status.current_title || '').toLowerCase().includes(term)) score += 35;
+    // Headline match
+    if ((candidate.current_status.headline || '').toLowerCase().includes(term)) score += 30;
+    // Company match
+    if ((candidate.current_status.current_company || '').toLowerCase().includes(term)) score += 20;
+    // Category match
+    if (candidate._category.toLowerCase().includes(term)) score += 15;
+    // Education match
+    if (candidate.education.some(e => e.institution.toLowerCase().includes(term) || e.field_of_study.toLowerCase().includes(term))) score += 15;
+    // Certification match
+    if (candidate.certifications.some(c => c.name.toLowerCase().includes(term))) score += 20;
+    // General blob match
+    if (candidate._searchBlob.includes(term)) score += 5;
+  }
+
+  // Bonus for rating
+  score += candidate.ats_metadata.rating * 2;
+
+  return score;
+}
+
+// ─── APPLY FILTERS ────────────────────────────────────────────────────────────
+function applyFilters() {
+  const query = document.getElementById('searchBar').value.trim();
+  const category = document.getElementById('filterCategory').value;
+  const role = document.getElementById('filterRole').value;
+  const location = document.getElementById('filterLocation').value;
+  const gender = document.getElementById('filterGender').value;
+  const ageMin = parseInt(document.getElementById('ageMin').value) || 0;
+  const ageMax = parseInt(document.getElementById('ageMax').value) || 999;
+  const expMin = parseInt(document.getElementById('expMin').value) || 0;
+  const expMax = parseInt(document.getElementById('expMax').value) || 999;
+  const language = document.getElementById('filterLanguage').value;
+  const status = document.getElementById('filterStatus').value;
+  const sortBy = document.getElementById('sortSelect').value;
+
+  // Toggle clear button
+  const clearBtn = document.getElementById('searchClear');
+  clearBtn.classList.toggle('visible', query.length > 0);
+
+  // Filter
+  let results = allCandidates.filter(c => {
+    if (category && c._category !== category) return false;
+    if (role && c.current_status.current_title !== role) return false;
+    if (location && c.personal_info.location.city !== location) return false;
+    if (gender && c.personal_info.gender !== gender) return false;
+    if (c.personal_info.age < ageMin || c.personal_info.age > ageMax) return false;
+    const yoe = c.current_status.years_of_experience;
+    if (yoe < expMin || yoe > expMax) return false;
+    if (language && !c.languages.some(l => l.language === language)) return false;
+    if (status && c.ats_metadata.application_status !== status) return false;
+
+    // Keyword filter
+    if (query) {
+      const terms = query.toLowerCase().split(/\s+/);
+      const matches = terms.every(t => c._searchBlob.includes(t));
+      if (!matches) return false;
+    }
+
+    return true;
+  });
+
+  // Compute scores
+  results.forEach(c => { c._score = computeScore(c, query); });
+
+  // Sort
+  switch(sortBy) {
+    case 'relevance': results.sort((a,b) => b._score - a._score); break;
+    case 'name_asc': results.sort((a,b) => a.personal_info.full_name.localeCompare(b.personal_info.full_name)); break;
+    case 'name_desc': results.sort((a,b) => b.personal_info.full_name.localeCompare(a.personal_info.full_name)); break;
+    case 'exp_desc': results.sort((a,b) => b.current_status.years_of_experience - a.current_status.years_of_experience); break;
+    case 'exp_asc': results.sort((a,b) => a.current_status.years_of_experience - b.current_status.years_of_experience); break;
+    case 'age_asc': results.sort((a,b) => a.personal_info.age - b.personal_info.age); break;
+    case 'age_desc': results.sort((a,b) => b.personal_info.age - a.personal_info.age); break;
+    case 'rating_desc': results.sort((a,b) => b.ats_metadata.rating - a.ats_metadata.rating); break;
+  }
+
+  filteredCandidates = results;
+  currentPage = 1;
+  renderResults();
+  renderActiveFilters();
+  document.getElementById('statFiltered').textContent = results.length.toLocaleString();
+}
+
+// ─── RENDER RESULTS ───────────────────────────────────────────────────────────
+function renderResults() {
+  const grid = document.getElementById('candidatesGrid');
+  const count = document.getElementById('resultsCount');
+  const start = (currentPage - 1) * PER_PAGE;
+  const end = start + PER_PAGE;
+  const page = filteredCandidates.slice(start, end);
+  const query = document.getElementById('searchBar').value.trim().toLowerCase();
+  const queryTerms = query ? query.split(/\s+/) : [];
+
+  count.innerHTML = `<strong>${filteredCandidates.length.toLocaleString()}</strong> candidati trovati`;
+
+  if (page.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#128269;</div>
+        <div class="empty-title">Nessun risultato trovato</div>
+        <div class="empty-text">Prova a modificare i filtri o la ricerca per trovare i candidati che cerchi.</div>
+      </div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  grid.innerHTML = page.map((c, i) => {
+    const maxScore = queryTerms.length ? queryTerms.length * 50 + 10 : 100;
+    const pct = Math.min(99, Math.round((c._score / maxScore) * 100)) || Math.round(c.ats_metadata.rating * 20);
+    const scoreClass = pct >= 70 ? 'match-high' : pct >= 40 ? 'match-medium' : 'match-low';
+
+    const statusMap = {
+      hired: 'status-hired', offer_extended: 'status-offer',
+      final_interview: 'status-interview', technical_interview: 'status-interview',
+      phone_interview: 'status-interview', screening: 'status-screening',
+      new: 'status-new', rejected: 'status-rejected', withdrawn: 'status-withdrawn'
+    };
+    const statusClass = statusMap[c.ats_metadata.application_status] || 'status-new';
+    const statusLabel = c.ats_metadata.application_status.replace(/_/g, ' ');
+
+    const topSkills = c.skills.technical.slice(0, 6);
+    const skillTags = topSkills.map(s => {
+      const hl = queryTerms.some(t => s.toLowerCase().includes(t)) ? ' highlight' : '';
+      return `<span class="skill-tag${hl}">${s}</span>`;
+    }).join('');
+
+    const langs = c.languages.map(l => `${l.language} (${l.level})`).join(', ');
+    const genderIcon = c.personal_info.gender === 'M' ? '&#9794;' : '&#9792;';
+
+    return `
+    <div class="candidate-card" onclick="openModal(${start + i})">
+      <div class="card-top">
+        <div class="card-main">
+          <div class="candidate-name">${c.personal_info.full_name}</div>
+          <div class="candidate-headline">${c.current_status.headline}</div>
+          <div class="candidate-meta">
+            <span>${genderIcon} ${c.personal_info.gender === 'M' ? 'Uomo' : 'Donna'}, ${c.personal_info.age} anni</span>
+            <span>&#128205; ${c.personal_info.location.city}</span>
+            <span>&#9201; ${c.current_status.years_of_experience} anni exp.</span>
+            <span>&#127760; ${langs}</span>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="match-score ${scoreClass}">${pct}%</div>
+          <div class="ats-status ${statusClass}">${statusLabel}</div>
+        </div>
+      </div>
+      <div class="card-skills">${skillTags}</div>
+    </div>`;
+  }).join('');
+
+  renderPagination();
+}
+
+// ─── PAGINATION ───────────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filteredCandidates.length / PER_PAGE);
+  const el = document.getElementById('pagination');
+  if (total <= 1) { el.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>&#9664; Prev</button>`;
+
+  const range = 2;
+  const pages = [];
+  pages.push(1);
+  for (let i = Math.max(2, currentPage - range); i <= Math.min(total - 1, currentPage + range); i++) pages.push(i);
+  if (total > 1) pages.push(total);
+
+  const unique = [...new Set(pages)];
+  let last = 0;
+  for (const p of unique) {
+    if (p - last > 1) html += `<span style="color:var(--text-muted)">...</span>`;
+    html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    last = p;
+  }
+
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Next &#9654;</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(p) {
+  const total = Math.ceil(filteredCandidates.length / PER_PAGE);
+  if (p < 1 || p > total) return;
+  currentPage = p;
+  renderResults();
+  document.getElementById('resultsArea').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── ACTIVE FILTER TAGS ──────────────────────────────────────────────────────
+function renderActiveFilters() {
+  const el = document.getElementById('activeFilters');
+  const tags = [];
+  const cat = document.getElementById('filterCategory').value;
+  const role = document.getElementById('filterRole').value;
+  const loc = document.getElementById('filterLocation').value;
+  const gen = document.getElementById('filterGender').value;
+  const lang = document.getElementById('filterLanguage').value;
+  const status = document.getElementById('filterStatus').value;
+  const ageMin = document.getElementById('ageMin').value;
+  const ageMax = document.getElementById('ageMax').value;
+  const expMin = document.getElementById('expMin').value;
+  const expMax = document.getElementById('expMax').value;
+
+  if (cat) tags.push({ label: cat, clear: () => { document.getElementById('filterCategory').value = ''; applyFilters(); } });
+  if (role) tags.push({ label: role, clear: () => { document.getElementById('filterRole').value = ''; applyFilters(); } });
+  if (loc) tags.push({ label: loc, clear: () => { document.getElementById('filterLocation').value = ''; applyFilters(); } });
+  if (gen) tags.push({ label: gen === 'M' ? 'Uomo' : 'Donna', clear: () => { document.getElementById('filterGender').value = ''; applyFilters(); } });
+  if (lang) tags.push({ label: lang, clear: () => { document.getElementById('filterLanguage').value = ''; applyFilters(); } });
+  if (status) tags.push({ label: status.replace(/_/g, ' '), clear: () => { document.getElementById('filterStatus').value = ''; applyFilters(); } });
+  if (ageMin || ageMax) tags.push({ label: `Età ${ageMin||'?'}-${ageMax||'?'}`, clear: () => { document.getElementById('ageMin').value = ''; document.getElementById('ageMax').value = ''; applyFilters(); } });
+  if (expMin || expMax) tags.push({ label: `Exp ${expMin||'?'}-${expMax||'?'} anni`, clear: () => { document.getElementById('expMin').value = ''; document.getElementById('expMax').value = ''; applyFilters(); } });
+
+  el.innerHTML = tags.map((t, i) =>
+    `<span class="active-tag">${t.label} <button onclick="event.stopPropagation(); window._clearTag${i}()">&#10005;</button></span>`
+  ).join('');
+  tags.forEach((t, i) => { window[`_clearTag${i}`] = t.clear; });
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+function openModal(index) {
+  const c = filteredCandidates[index];
+  if (!c) return;
+
+  const genderLabel = c.personal_info.gender === 'M' ? 'Uomo' : 'Donna';
+  const langs = c.languages.map(l => `${l.language} (${l.level})`).join(', ');
+
+  const expHtml = c.work_experience.map(w => `
+    <div class="modal-exp-item">
+      <div class="modal-exp-company">${w.company}</div>
+      <div class="modal-exp-title">${w.title} — ${w.contract_type}</div>
+      <div class="modal-exp-dates">${w.start_date} → ${w.end_date || 'Presente'} &nbsp;|&nbsp; ${w.location}</div>
+      <div class="modal-exp-desc">${w.description}</div>
+    </div>
+  `).join('');
+
+  const eduHtml = c.education.map(e => `
+    <div class="modal-exp-item">
+      <div class="modal-exp-company">${e.institution}</div>
+      <div class="modal-exp-title">${e.degree} in ${e.field_of_study}</div>
+      <div class="modal-exp-dates">${e.start_date} → ${e.end_date}${e.grade ? ` &nbsp;|&nbsp; Voto: ${e.grade}/110` : ''}</div>
+      ${e.thesis_title ? `<div class="modal-exp-desc">Tesi: ${e.thesis_title}</div>` : ''}
+    </div>
+  `).join('');
+
+  const certHtml = c.certifications.length ? c.certifications.map(cert => `
+    <div class="modal-exp-item">
+      <div class="modal-exp-company">${cert.name}</div>
+      <div class="modal-exp-dates">${cert.issue_date}${cert.expiry_date ? ` → ${cert.expiry_date}` : ''} &nbsp;|&nbsp; ID: ${cert.credential_id}</div>
+    </div>
+  `).join('') : '<div style="font-size:13px;color:var(--text-muted)">Nessuna certificazione registrata.</div>';
+
+  const skillTags = c.skills.technical.map(s => `<span class="modal-tag" style="border-color:rgba(0,212,255,0.3);color:var(--accent)">${s}</span>`).join('') +
+    c.skills.soft.map(s => `<span class="modal-tag" style="border-color:rgba(168,85,247,0.3);color:var(--accent-purple)">${s}</span>`).join('');
+
+  const salaryInfo = c.compensation.current_salary
+    ? `€${c.compensation.current_salary.toLocaleString()}`
+    : 'Non dichiarato';
+
+  document.getElementById('modalContent').innerHTML = `
+    <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    <div class="modal-name">${c.personal_info.full_name}</div>
+    <div class="modal-headline">${c.current_status.headline}</div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Informazioni Personali</div>
+      <div class="modal-info-grid">
+        <div class="modal-info-item"><span class="modal-info-label">Email</span><span class="modal-info-value">${c.personal_info.email}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Telefono</span><span class="modal-info-value">${c.personal_info.phone}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Città</span><span class="modal-info-value">${c.personal_info.location.city}, ${c.personal_info.location.country}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Sesso / Età</span><span class="modal-info-value">${genderLabel}, ${c.personal_info.age} anni</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Anni di esperienza</span><span class="modal-info-value">${c.current_status.years_of_experience}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Disponibilità</span><span class="modal-info-value">${c.current_status.employment_status} — ${c.current_status.remote_preference}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">RAL attuale</span><span class="modal-info-value">${salaryInfo}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">RAL desiderata</span><span class="modal-info-value">€${c.compensation.desired_salary_min.toLocaleString()} — €${c.compensation.desired_salary_max.toLocaleString()}</span></div>
+        <div class="modal-info-item"><span class="modal-info-label">LinkedIn</span><span class="modal-info-value"><a href="${c.personal_info.linkedin_url}" target="_blank" style="color:var(--accent)">Profilo</a></span></div>
+        <div class="modal-info-item"><span class="modal-info-label">Lingue</span><span class="modal-info-value">${langs}</span></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Competenze</div>
+      <div class="modal-tags">${skillTags}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Esperienze Lavorative</div>
+      ${expHtml}
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Formazione</div>
+      ${eduHtml}
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Certificazioni</div>
+      ${certHtml}
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Summary</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">${c.professional_summary}</div>
+    </div>
+  `;
+
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function clearSearch() {
+  document.getElementById('searchBar').value = '';
+  applyFilters();
+}
+
+function clearAllFilters() {
+  document.getElementById('searchBar').value = '';
+  document.getElementById('filterCategory').value = '';
+  document.getElementById('filterRole').value = '';
+  document.getElementById('filterLocation').value = '';
+  document.getElementById('filterGender').value = '';
+  document.getElementById('filterLanguage').value = '';
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('ageMin').value = '';
+  document.getElementById('ageMax').value = '';
+  document.getElementById('expMin').value = '';
+  document.getElementById('expMax').value = '';
+  applyFilters();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allCandidates.length.toLocaleString();
+  document.getElementById('statCategories').textContent = Object.keys(JOB_CATEGORIES).length;
+}
+
+// ─── DEBOUNCED SEARCH ─────────────────────────────────────────────────────────
+let searchTimeout;
+document.getElementById('searchBar').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(applyFilters, 250);
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadDatabase();
+</script>
+</body>
+</html>
