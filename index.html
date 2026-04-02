@@ -426,6 +426,72 @@ body {
   color: var(--text-secondary);
 }
 
+/* ─── AI SEARCH TOGGLE ───────────────────────────── */
+.ai-toggle-wrap {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin-top: 10px;
+}
+.ai-toggle-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border-light);
+  background: var(--bg-card); color: var(--text-muted);
+  font-size: 12px; font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: all 0.25s; font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.ai-toggle-btn .ai-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-muted); transition: background 0.25s;
+}
+.ai-toggle-btn.active {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  background: rgba(168,85,247,0.1);
+  box-shadow: 0 0 12px rgba(168,85,247,0.15);
+}
+.ai-toggle-btn.active .ai-dot {
+  background: var(--accent-purple);
+  box-shadow: 0 0 6px rgba(168,85,247,0.8);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+.ai-status-text {
+  font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px;
+}
+.ai-status-text.loading { color: var(--accent-orange); }
+.ai-status-text.ready { color: var(--accent-purple); }
+
+/* AI match badge on cards */
+.ai-match-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: rgba(168,85,247,0.12); color: var(--accent-purple);
+  border: 1px solid rgba(168,85,247,0.25);
+  font-weight: 600; letter-spacing: 0.5px; margin-left: 6px;
+}
+
+/* AI score bar */
+.ai-score-bar-wrap {
+  margin-top: 8px; display: none;
+}
+.ai-score-bar-wrap.show { display: block; }
+.ai-score-bar-label {
+  font-size: 10px; color: var(--text-muted); margin-bottom: 3px;
+  display: flex; justify-content: space-between;
+}
+.ai-score-bar {
+  height: 3px; background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.ai-score-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent));
+  transition: width 0.4s ease;
+}
+
 /* ─── MOBILE TOGGLE BUTTON ───────────────────────── */
 .filter-toggle-btn {
   display: none;
@@ -555,6 +621,13 @@ body {
            placeholder="Cerca per nome, competenza, azienda, ruolo, parola chiave...">
     <button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
   </div>
+  <div class="ai-toggle-wrap">
+    <button class="ai-toggle-btn" id="aiToggleBtn" onclick="toggleAISearch()">
+      <span class="ai-dot"></span>
+      &#129504; AI Semantic Search
+    </button>
+    <span class="ai-status-text" id="aiStatusText">Modalità parole chiave attiva</span>
+  </div>
 </header>
 
 <!-- Main -->
@@ -681,6 +754,152 @@ let allCandidates = [];
 let filteredCandidates = [];
 let currentPage = 1;
 const PER_PAGE = 25;
+
+// ─── AI SEARCH STATE ──────────────────────────────────────────────────────────
+let aiMode = false;
+let aiIndex = null;          // loaded search_index.json
+let aiCandidateVecs = null;  // Float32Array (n_candidates × n_components)
+let aiSvdComponents = null;  // Float32Array (n_components × n_features)
+let aiScores = {};           // candidate_id → similarity score (0..1)
+
+// ─── TOGGLE AI MODE ───────────────────────────────────────────────────────────
+async function toggleAISearch() {
+  const btn = document.getElementById('aiToggleBtn');
+  const statusEl = document.getElementById('aiStatusText');
+
+  if (aiMode) {
+    // Switch OFF
+    aiMode = false;
+    aiScores = {};
+    btn.classList.remove('active');
+    statusEl.textContent = 'Modalità parole chiave attiva';
+    statusEl.className = 'ai-status-text';
+    applyFilters();
+    return;
+  }
+
+  // Switch ON — load index if needed
+  if (!aiIndex) {
+    btn.disabled = true;
+    statusEl.textContent = 'Caricamento indice semantico...';
+    statusEl.className = 'ai-status-text loading';
+    try {
+      const resp = await fetch('search_index.json');
+      if (!resp.ok) throw new Error('search_index.json non trovato');
+      aiIndex = await resp.json();
+
+      // Decode base64 Float32 arrays
+      aiCandidateVecs = decodeB64Float32(aiIndex.candidate_vectors_b64);
+      aiSvdComponents = decodeB64Float32(aiIndex.svd_components_b64);
+
+      statusEl.textContent = `Indice AI pronto — ${aiIndex.n_candidates.toLocaleString()} candidati, ${aiIndex.n_components} dimensioni`;
+      statusEl.className = 'ai-status-text ready';
+    } catch(e) {
+      statusEl.textContent = 'Errore caricamento indice: ' + e.message;
+      statusEl.className = 'ai-status-text';
+      btn.disabled = false;
+      return;
+    }
+    btn.disabled = false;
+  }
+
+  aiMode = true;
+  btn.classList.add('active');
+  statusEl.textContent = `AI attiva — ${aiIndex.n_components}D LSA semantic space`;
+  statusEl.className = 'ai-status-text ready';
+  applyFilters();
+}
+
+// ─── BASE64 → Float32Array ────────────────────────────────────────────────────
+function decodeB64Float32(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Float32Array(bytes.buffer);
+}
+
+// ─── AI QUERY → VECTOR (TF-IDF + LSA projection) ─────────────────────────────
+function queryToVector(queryText) {
+  const vocab = aiIndex.vocabulary;
+  const idf = aiIndex.idf;
+  const nFeatures = aiIndex.n_features;
+  const nComponents = aiIndex.n_components;
+
+  // 1. Tokenize query (same pattern as Python)
+  const tokens = queryText.toLowerCase().match(/[a-zA-Z][a-zA-Z0-9\+\#\.]*/g) || [];
+
+  // 2. Count term frequencies (including bigrams)
+  const tf = {};
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    tf[t] = (tf[t] || 0) + 1;
+    if (i + 1 < tokens.length) {
+      const bg = t + ' ' + tokens[i+1];
+      tf[bg] = (tf[bg] || 0) + 1;
+    }
+  }
+
+  // 3. Apply sublinear TF scaling and IDF → TF-IDF sparse vector
+  const totalTerms = tokens.length || 1;
+  const tfidfVec = new Float32Array(nFeatures);
+  for (const [term, count] of Object.entries(tf)) {
+    const idx = vocab.indexOf(term);
+    if (idx >= 0) {
+      const tfVal = 1 + Math.log(count);   // sublinear_tf
+      tfidfVec[idx] = tfVal * idf[idx];
+    }
+  }
+
+  // 4. L2-normalize
+  let norm = 0;
+  for (let i = 0; i < nFeatures; i++) norm += tfidfVec[i] * tfidfVec[i];
+  norm = Math.sqrt(norm) || 1;
+  for (let i = 0; i < nFeatures; i++) tfidfVec[i] /= norm;
+
+  // 5. Project into LSA space: queryVec (1 × nFeatures) × svdComponents^T (nFeatures × nComponents)
+  //    = queryLSA (1 × nComponents)
+  //    svdComponents shape: (nComponents, nFeatures) stored row-major
+  const queryLSA = new Float32Array(nComponents);
+  for (let c = 0; c < nComponents; c++) {
+    let dot = 0;
+    const offset = c * nFeatures;
+    for (let f = 0; f < nFeatures; f++) {
+      dot += aiSvdComponents[offset + f] * tfidfVec[f];
+    }
+    queryLSA[c] = dot;
+  }
+
+  // 6. L2-normalize result
+  let norm2 = 0;
+  for (let i = 0; i < nComponents; i++) norm2 += queryLSA[i] * queryLSA[i];
+  norm2 = Math.sqrt(norm2) || 1;
+  for (let i = 0; i < nComponents; i++) queryLSA[i] /= norm2;
+
+  return queryLSA;
+}
+
+// ─── COSINE SIMILARITY (pre-normalized vectors → dot product) ─────────────────
+function computeAIScores(queryText) {
+  if (!queryText.trim() || !aiIndex) { aiScores = {}; return; }
+
+  const nComp = aiIndex.n_components;
+  const nCand = aiIndex.n_candidates;
+  const queryVec = queryToVector(queryText);
+  const ids = aiIndex.candidate_ids;
+  const newScores = {};
+
+  for (let i = 0; i < nCand; i++) {
+    const offset = i * nComp;
+    let dot = 0;
+    for (let c = 0; c < nComp; c++) {
+      dot += aiCandidateVecs[offset + c] * queryVec[c];
+    }
+    // dot product of unit vectors = cosine similarity ∈ [-1, 1]
+    newScores[ids[i]] = Math.max(0, dot); // clamp to [0,1]
+  }
+
+  aiScores = newScores;
+}
 
 // ─── JOB CATEGORIES ──────────────────────────────────────────────────────────
 const JOB_CATEGORIES = {
@@ -897,6 +1116,10 @@ function applyFilters() {
   const clearBtn = document.getElementById('searchClear');
   clearBtn.classList.toggle('visible', query.length > 0);
 
+  // Compute AI scores if in AI mode
+  if (aiMode && query) computeAIScores(query);
+  else aiScores = {};
+
   // Filter
   let results = allCandidates.filter(c => {
     if (category && c._category !== category) return false;
@@ -920,8 +1143,16 @@ function applyFilters() {
     return true;
   });
 
-  // Compute scores
-  results.forEach(c => { c._score = computeScore(c, query); });
+  // Compute scores (keyword or AI)
+  if (aiMode && Object.keys(aiScores).length > 0) {
+    results.forEach(c => {
+      const aiSim = aiScores[c.candidate_id] || 0;
+      c._aiScore = aiSim;
+      c._score = aiSim * 100 + c.ats_metadata.rating; // AI sim dominates
+    });
+  } else {
+    results.forEach(c => { c._score = computeScore(c, query); c._aiScore = null; });
+  }
 
   // Sort
   switch(sortBy) {
@@ -966,9 +1197,25 @@ function renderResults() {
   }
 
   grid.innerHTML = page.map((c, i) => {
-    const maxScore = queryTerms.length ? queryTerms.length * 50 + 10 : 100;
-    const pct = Math.min(99, Math.round((c._score / maxScore) * 100)) || Math.round(c.ats_metadata.rating * 20);
-    const scoreClass = pct >= 70 ? 'match-high' : pct >= 40 ? 'match-medium' : 'match-low';
+    // Score display: AI mode shows cosine similarity %, keyword mode shows relevance %
+    let pct, scoreClass, aiBarHtml = '';
+    if (aiMode && c._aiScore !== null && c._aiScore !== undefined) {
+      pct = Math.round(c._aiScore * 100);
+      scoreClass = pct >= 55 ? 'match-high' : pct >= 30 ? 'match-medium' : 'match-low';
+      const barW = Math.round(c._aiScore * 100);
+      aiBarHtml = `
+        <div class="ai-score-bar-wrap show">
+          <div class="ai-score-bar-label">
+            <span>&#129504; Similarità semantica</span>
+            <span>${barW}%</span>
+          </div>
+          <div class="ai-score-bar"><div class="ai-score-fill" style="width:${barW}%"></div></div>
+        </div>`;
+    } else {
+      const maxScore = queryTerms.length ? queryTerms.length * 50 + 10 : 100;
+      pct = Math.min(99, Math.round((c._score / maxScore) * 100)) || Math.round(c.ats_metadata.rating * 20);
+      scoreClass = pct >= 70 ? 'match-high' : pct >= 40 ? 'match-medium' : 'match-low';
+    }
 
     const statusMap = {
       hired: 'status-hired', offer_extended: 'status-offer',
@@ -988,11 +1235,14 @@ function renderResults() {
     const langs = c.languages.map(l => `${l.language} (${l.level})`).join(', ');
     const genderIcon = c.personal_info.gender === 'M' ? '&#9794;' : '&#9792;';
 
+    const aiLabel = (aiMode && c._aiScore !== null && c._aiScore !== undefined)
+      ? `<span class="ai-match-badge">&#129504; AI</span>` : '';
+
     return `
     <div class="candidate-card" onclick="openModal(${start + i})">
       <div class="card-top">
         <div class="card-main">
-          <div class="candidate-name">${c.personal_info.full_name}</div>
+          <div class="candidate-name">${c.personal_info.full_name}${aiLabel}</div>
           <div class="candidate-headline">${c.current_status.headline}</div>
           <div class="candidate-meta">
             <span>${genderIcon} ${c.personal_info.gender === 'M' ? 'Uomo' : 'Donna'}, ${c.personal_info.age} anni</span>
@@ -1007,6 +1257,7 @@ function renderResults() {
         </div>
       </div>
       <div class="card-skills">${skillTags}</div>
+      ${aiBarHtml}
     </div>`;
   }).join('');
 
@@ -1176,6 +1427,7 @@ function closeModal() {
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
 function clearSearch() {
   document.getElementById('searchBar').value = '';
+  aiScores = {};
   applyFilters();
 }
 
