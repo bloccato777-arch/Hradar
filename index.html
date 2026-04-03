@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HRadar — Talent Search Engine</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root {
   --bg-primary: #0a0e1a;
@@ -492,6 +493,110 @@ body {
   transition: width 0.4s ease;
 }
 
+/* ─── ANALYTICS VIEW ─────────────────────────────── */
+.analytics-view {
+  display: none; flex: 1; overflow-y: auto; padding: 24px 28px;
+  scrollbar-width: thin; scrollbar-color: var(--border-light) transparent;
+}
+.analytics-view.active { display: block; }
+
+.analytics-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.analytics-title {
+  font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700;
+  color: var(--accent); letter-spacing: 2px;
+}
+.analytics-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.analytics-refresh-btn {
+  padding: 8px 16px; background: var(--bg-card);
+  border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 12px; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.analytics-refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* KPI row */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  position: relative; overflow: hidden;
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+.kpi-card.blue::before  { background: linear-gradient(90deg, var(--accent), #38bdf8); }
+.kpi-card.purple::before{ background: linear-gradient(90deg, var(--accent-purple), #ec4899); }
+.kpi-card.green::before { background: linear-gradient(90deg, var(--accent-green), #86efac); }
+.kpi-card.orange::before{ background: linear-gradient(90deg, var(--accent-orange), #fbbf24); }
+
+.kpi-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--text-muted); font-weight: 700; margin-bottom: 6px;
+}
+.kpi-value {
+  font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700;
+  color: var(--text-primary); line-height: 1;
+}
+.kpi-sub {
+  font-size: 11px; color: var(--text-muted); margin-top: 5px;
+}
+
+/* Charts grid */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin-bottom: 16px;
+}
+.chart-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+}
+.chart-card.full-width { grid-column: 1 / -1; }
+.chart-card.triple { grid-column: span 1; }
+.chart-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-muted); margin-bottom: 16px;
+}
+.chart-wrap { position: relative; height: 220px; }
+.chart-wrap.tall { height: 280px; }
+
+/* Funnel bars */
+.funnel-list { display: flex; flex-direction: column; gap: 8px; }
+.funnel-row {
+  display: grid; grid-template-columns: 130px 1fr 40px;
+  align-items: center; gap: 10px;
+}
+.funnel-label { font-size: 11px; color: var(--text-secondary); text-align: right; }
+.funnel-bar-wrap { background: var(--bg-primary); border-radius: 4px; height: 8px; overflow: hidden; }
+.funnel-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.funnel-count { font-size: 11px; color: var(--text-muted); font-family: 'Orbitron', monospace; }
+
+/* Top skills list */
+.skill-list { display: flex; flex-direction: column; gap: 6px; }
+.skill-row { display: grid; grid-template-columns: 1fr 120px 36px; align-items: center; gap: 8px; }
+.skill-name { font-size: 12px; color: var(--text-secondary); }
+.skill-bar-wrap { background: var(--bg-primary); border-radius: 3px; height: 6px; overflow: hidden; }
+.skill-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-purple)); transition: width 0.5s; }
+.skill-pct { font-size: 10px; color: var(--text-muted); text-align: right; }
+
+@media (max-width: 900px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-grid { grid-template-columns: 1fr; }
+  .chart-card.full-width { grid-column: 1; }
+  .analytics-view { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kpi-value { font-size: 22px; }
+}
+
 /* ─── NAV TABS ───────────────────────────────────── */
 .nav-tabs {
   display: flex; gap: 4px; margin-bottom: 14px;
@@ -860,11 +965,14 @@ body {
   <div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabSearch" onclick="switchView('search')">
-        &#128269; Ricerca Candidati
+        &#128269; Ricerca
       </button>
       <button class="nav-tab pipeline-tab" id="tabPipeline" onclick="switchView('pipeline')">
         &#128336; Pipeline
         <span class="tab-badge" id="pipelineBadge">0</span>
+      </button>
+      <button class="nav-tab" id="tabAnalytics" onclick="switchView('analytics')" style="--tab-active-color:var(--accent-green);">
+        &#128202; Analytics
       </button>
     </div>
     <div class="ai-toggle-wrap" style="margin-top:0;">
@@ -1004,6 +1112,110 @@ body {
   </div>
   <div class="kanban-scroll">
     <div class="kanban-board" id="kanbanBoard"></div>
+  </div>
+</div>
+
+<!-- Analytics View -->
+<div class="analytics-view" id="analyticsView">
+  <div class="analytics-header">
+    <div>
+      <div class="analytics-title">&#128202; ANALYTICS</div>
+      <div class="analytics-subtitle" id="analyticsSubtitle">Caricamento in corso...</div>
+    </div>
+    <button class="analytics-refresh-btn" onclick="renderAnalytics()">&#8635; Aggiorna</button>
+  </div>
+
+  <!-- KPI row -->
+  <div class="kpi-row">
+    <div class="kpi-card blue">
+      <div class="kpi-label">Candidati Totali</div>
+      <div class="kpi-value" id="kpiTotal">—</div>
+      <div class="kpi-sub">nel database</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="kpi-label">In Pipeline</div>
+      <div class="kpi-value" id="kpiPipeline">—</div>
+      <div class="kpi-sub">candidati attivi</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Età Media</div>
+      <div class="kpi-value" id="kpiAge">—</div>
+      <div class="kpi-sub">anni</div>
+    </div>
+    <div class="kpi-card orange">
+      <div class="kpi-label">Esperienza Media</div>
+      <div class="kpi-value" id="kpiExp">—</div>
+      <div class="kpi-sub">anni di carriera</div>
+    </div>
+  </div>
+
+  <!-- Row 1: Pipeline funnel + Gender/Degree -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#128200; Funnel Pipeline per Stage</div>
+      <div class="funnel-list" id="chartFunnel"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">&#9898; Distribuzione Sesso &amp; Titolo di Studio</div>
+      <div class="chart-wrap">
+        <canvas id="chartGenderDegree"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Top skills + Città -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#128187; Top 10 Competenze Tecniche</div>
+      <div class="skill-list" id="chartSkills"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">&#128205; Top 10 Città</div>
+      <div class="chart-wrap">
+        <canvas id="chartCities"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Età + Esperienza -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#128197; Distribuzione Età</div>
+      <div class="chart-wrap">
+        <canvas id="chartAge"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">&#9201; Distribuzione Anni di Esperienza</div>
+      <div class="chart-wrap">
+        <canvas id="chartExp"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: Categorie + Lingue -->
+  <div class="charts-grid">
+    <div class="chart-card full-width">
+      <div class="chart-title">&#128188; Candidati per Macro-Categoria</div>
+      <div class="chart-wrap tall">
+        <canvas id="chartCategories"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">&#127760; Distribuzione Lingue Parlate</div>
+      <div class="chart-wrap">
+        <canvas id="chartLanguages"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">&#128176; Distribuzione RAL Desiderata</div>
+      <div class="chart-wrap">
+        <canvas id="chartSalary"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1345,22 +1557,30 @@ function moveStage(candidateId, newStage) {
 // ─── VIEW SWITCHER ────────────────────────────────────────────────────────────
 function switchView(view) {
   currentView = view;
-  const searchMain = document.getElementById('searchMain');
-  const pipelineView = document.getElementById('pipelineView');
-  const tabSearch = document.getElementById('tabSearch');
-  const tabPipeline = document.getElementById('tabPipeline');
+  const searchMain    = document.getElementById('searchMain');
+  const pipelineView  = document.getElementById('pipelineView');
+  const analyticsView = document.getElementById('analyticsView');
+  const tabSearch     = document.getElementById('tabSearch');
+  const tabPipeline   = document.getElementById('tabPipeline');
+  const tabAnalytics  = document.getElementById('tabAnalytics');
+
+  // Reset all
+  searchMain.style.display = 'none';
+  pipelineView.classList.remove('active');
+  analyticsView.classList.remove('active');
+  [tabSearch, tabPipeline, tabAnalytics].forEach(t => t?.classList.remove('active'));
 
   if (view === 'pipeline') {
-    searchMain.style.display = 'none';
     pipelineView.classList.add('active');
-    tabSearch.classList.remove('active');
     tabPipeline.classList.add('active');
     renderKanban();
+  } else if (view === 'analytics') {
+    analyticsView.classList.add('active');
+    tabAnalytics.classList.add('active');
+    setTimeout(renderAnalytics, 50); // allow DOM paint before canvas render
   } else {
     searchMain.style.display = 'flex';
-    pipelineView.classList.remove('active');
     tabSearch.classList.add('active');
-    tabPipeline.classList.remove('active');
   }
 }
 
@@ -2102,6 +2322,200 @@ function toggleMobileFilters() {
   const btn = document.getElementById('filterToggleBtn');
   sidebar.classList.toggle('mobile-open');
   btn.classList.toggle('open');
+}
+
+// ─── ANALYTICS ────────────────────────────────────────────────────────────────
+let chartInstances = {};
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function renderAnalytics() {
+  if (!allCandidates.length) return;
+
+  const C = allCandidates;
+  const N = C.length;
+
+  // KPIs
+  document.getElementById('kpiTotal').textContent = N.toLocaleString('it-IT');
+  document.getElementById('kpiPipeline').textContent = Object.keys(pipelineData).length;
+  const avgAge = Math.round(C.reduce((s,c) => s + c.personal_info.age, 0) / N);
+  document.getElementById('kpiAge').textContent = avgAge;
+  const avgExp = Math.round(C.reduce((s,c) => s + c.current_status.years_of_experience, 0) / N);
+  document.getElementById('kpiExp').textContent = avgExp;
+  document.getElementById('analyticsSubtitle').textContent =
+    `${N.toLocaleString()} candidati · aggiornato ${new Date().toLocaleTimeString('it-IT')}`;
+
+  const CHART_DEFAULTS = {
+    color: '#94a3b8',
+    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
+    scales: {
+      x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+      y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#1e293b' } },
+    }
+  };
+  const PALETTE = ['#00d4ff','#a855f7','#22c55e','#f97316','#ec4899','#38bdf8','#fbbf24','#818cf8','#34d399','#fb7185'];
+
+  // ── 1. Pipeline Funnel ─────────────────────────────────────────────────────
+  const stageCount = {};
+  STAGES.forEach(s => { stageCount[s.id] = 0; });
+  Object.values(pipelineData).forEach(e => { stageCount[e.stage] = (stageCount[e.stage]||0)+1; });
+  const maxStage = Math.max(1, ...Object.values(stageCount));
+  document.getElementById('chartFunnel').innerHTML = STAGES.map(s => {
+    const cnt = stageCount[s.id] || 0;
+    const pct = Math.round((cnt / maxStage) * 100);
+    return `<div class="funnel-row">
+      <div class="funnel-label">${s.label}</div>
+      <div class="funnel-bar-wrap"><div class="funnel-bar" style="width:${pct}%;background:${s.color}"></div></div>
+      <div class="funnel-count">${cnt}</div>
+    </div>`;
+  }).join('');
+
+  // ── 2. Gender + Degree donut ───────────────────────────────────────────────
+  const gM = C.filter(c=>c.personal_info.gender==='M').length;
+  const gF = N - gM;
+  const degCount = { Bachelor:0, Master:0, PhD:0 };
+  C.forEach(c => c.education.forEach(e => { if (degCount[e.degree]!==undefined) degCount[e.degree]++; }));
+  destroyChart('chartGenderDegree');
+  chartInstances['chartGenderDegree'] = new Chart(
+    document.getElementById('chartGenderDegree'),
+    { type:'doughnut',
+      data:{ labels:['Uomo','Donna','Bachelor','Master','PhD'],
+             datasets:[{ data:[gM,gF,degCount.Bachelor,degCount.Master,degCount.PhD],
+               backgroundColor:['#00d4ff','#ec4899','#a855f7','#f97316','#22c55e'],
+               borderColor:'#0a0e1a', borderWidth:2 }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, padding:10 } } } }
+    });
+
+  // ── 3. Top 10 Skills ──────────────────────────────────────────────────────
+  const skillFreq = {};
+  C.forEach(c => c.skills.technical.forEach(s => { skillFreq[s] = (skillFreq[s]||0)+1; }));
+  const topSkills = Object.entries(skillFreq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxSkill = topSkills[0]?.[1] || 1;
+  document.getElementById('chartSkills').innerHTML = topSkills.map(([skill,cnt],i) =>
+    `<div class="skill-row">
+      <div class="skill-name">${skill}</div>
+      <div class="skill-bar-wrap"><div class="skill-bar" style="width:${Math.round(cnt/maxSkill*100)}%;background:${PALETTE[i]}"></div></div>
+      <div class="skill-pct">${Math.round(cnt/N*100)}%</div>
+    </div>`
+  ).join('');
+
+  // ── 4. Top 10 Cities bar ─────────────────────────────────────────────────
+  const cityFreq = {};
+  C.forEach(c => { const ci=c.personal_info.location.city; cityFreq[ci]=(cityFreq[ci]||0)+1; });
+  const topCities = Object.entries(cityFreq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartCities');
+  chartInstances['chartCities'] = new Chart(document.getElementById('chartCities'), {
+    type:'bar',
+    data:{ labels: topCities.map(([c])=>c),
+           datasets:[{ label:'Candidati', data: topCities.map(([,n])=>n),
+             backgroundColor: PALETTE, borderRadius:4 }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false} },
+      scales:{ x:{ ticks:{color:'#64748b',font:{size:10}}, grid:{color:'#1e293b'} },
+               y:{ ticks:{color:'#94a3b8',font:{size:10}}, grid:{display:false} } } }
+  });
+
+  // ── 5. Age distribution histogram ────────────────────────────────────────
+  const ageBuckets = {'18-24':0,'25-29':0,'30-34':0,'35-39':0,'40-44':0,'45-49':0,'50-54':0,'55+':0};
+  C.forEach(c => {
+    const a = c.personal_info.age;
+    if (a<25) ageBuckets['18-24']++;
+    else if (a<30) ageBuckets['25-29']++;
+    else if (a<35) ageBuckets['30-34']++;
+    else if (a<40) ageBuckets['35-39']++;
+    else if (a<45) ageBuckets['40-44']++;
+    else if (a<50) ageBuckets['45-49']++;
+    else if (a<55) ageBuckets['50-54']++;
+    else ageBuckets['55+']++;
+  });
+  destroyChart('chartAge');
+  chartInstances['chartAge'] = new Chart(document.getElementById('chartAge'), {
+    type:'bar',
+    data:{ labels: Object.keys(ageBuckets),
+           datasets:[{ label:'Candidati', data: Object.values(ageBuckets),
+             backgroundColor:'rgba(0,212,255,0.7)', borderColor:'#00d4ff',
+             borderWidth:1, borderRadius:4 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} }, scales: CHART_DEFAULTS.scales }
+  });
+
+  // ── 6. Experience distribution ───────────────────────────────────────────
+  const expBuckets = {'0-2':0,'3-5':0,'6-9':0,'10-14':0,'15-19':0,'20-24':0,'25+':0};
+  C.forEach(c => {
+    const e = c.current_status.years_of_experience;
+    if (e<=2) expBuckets['0-2']++;
+    else if (e<=5) expBuckets['3-5']++;
+    else if (e<=9) expBuckets['6-9']++;
+    else if (e<=14) expBuckets['10-14']++;
+    else if (e<=19) expBuckets['15-19']++;
+    else if (e<=24) expBuckets['20-24']++;
+    else expBuckets['25+']++;
+  });
+  destroyChart('chartExp');
+  chartInstances['chartExp'] = new Chart(document.getElementById('chartExp'), {
+    type:'bar',
+    data:{ labels: Object.keys(expBuckets),
+           datasets:[{ label:'Candidati', data: Object.values(expBuckets),
+             backgroundColor:'rgba(168,85,247,0.7)', borderColor:'#a855f7',
+             borderWidth:1, borderRadius:4 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} }, scales: CHART_DEFAULTS.scales }
+  });
+
+  // ── 7. Categories horizontal bar ─────────────────────────────────────────
+  const catFreq = {};
+  C.forEach(c => { const cat=c._category||'Other'; catFreq[cat]=(catFreq[cat]||0)+1; });
+  const sortedCats = Object.entries(catFreq).sort((a,b)=>b[1]-a[1]);
+  destroyChart('chartCategories');
+  chartInstances['chartCategories'] = new Chart(document.getElementById('chartCategories'), {
+    type:'bar',
+    data:{ labels: sortedCats.map(([c])=>c),
+           datasets:[{ label:'Candidati', data: sortedCats.map(([,n])=>n),
+             backgroundColor: sortedCats.map((_,i)=>PALETTE[i%PALETTE.length]),
+             borderRadius:4 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} }, scales: CHART_DEFAULTS.scales }
+  });
+
+  // ── 8. Languages doughnut ────────────────────────────────────────────────
+  const langFreq = {};
+  C.forEach(c => c.languages.forEach(l => { langFreq[l.language]=(langFreq[l.language]||0)+1; }));
+  const topLangs = Object.entries(langFreq).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  destroyChart('chartLanguages');
+  chartInstances['chartLanguages'] = new Chart(document.getElementById('chartLanguages'), {
+    type:'doughnut',
+    data:{ labels: topLangs.map(([l])=>l),
+           datasets:[{ data: topLangs.map(([,n])=>n),
+             backgroundColor: PALETTE, borderColor:'#0a0e1a', borderWidth:2 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{ color:'#94a3b8', font:{size:11}, padding:8 } } } }
+  });
+
+  // ── 9. Salary distribution ───────────────────────────────────────────────
+  const salBuckets = {'<25k':0,'25-35k':0,'35-50k':0,'50-65k':0,'65-80k':0,'80-100k':0,'>100k':0};
+  C.forEach(c => {
+    const s = c.compensation.desired_salary_min;
+    if (s<25000) salBuckets['<25k']++;
+    else if (s<35000) salBuckets['25-35k']++;
+    else if (s<50000) salBuckets['35-50k']++;
+    else if (s<65000) salBuckets['50-65k']++;
+    else if (s<80000) salBuckets['65-80k']++;
+    else if (s<100000) salBuckets['80-100k']++;
+    else salBuckets['>100k']++;
+  });
+  destroyChart('chartSalary');
+  chartInstances['chartSalary'] = new Chart(document.getElementById('chartSalary'), {
+    type:'bar',
+    data:{ labels: Object.keys(salBuckets),
+           datasets:[{ label:'Candidati', data: Object.values(salBuckets),
+             backgroundColor:'rgba(249,115,22,0.7)', borderColor:'#f97316',
+             borderWidth:1, borderRadius:4 }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} }, scales: CHART_DEFAULTS.scales }
+  });
 }
 
 // On desktop keep sidebar always open; on mobile keep closed by default
